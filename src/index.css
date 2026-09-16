@@ -1,0 +1,463 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+/* ============================================================
+   BMS NAVY COLOR PALETTE — Primary Brand: #073B5C
+   ============================================================ */
+
+/* ---------- DARK MODE (default) ---------- */
+:root,
+[data-theme="dark"] {
+  /* Page backgrounds */
+  --bg-page:          #031522;
+  --bg-surface:       #042338;
+  --bg-card:          #042338;
+  --bg-card-deep:     #031522;
+  --bg-input:         #031522;
+  --bg-header:        #073B5C;
+  --bg-sidebar:       #073B5C;
+  --bg-hover:         #0A527E;
+
+  /* Text */
+  --text-primary:     #f8fafc;
+  --text-secondary:   #bae6fd;   /* sky-200 for crisp text */
+  --text-muted:       #94a3b8;   /* slate-400 for high legibility */
+  --text-heading:     #ffffff;
+
+  /* Component Colors */
+  --id-kunjungan:     #38bdf8;   /* Vivid Sky Cyan in Dark Mode */
+  --emerald-durasi:   #34d399;   /* Bright Emerald Green */
+
+  /* Button variables */
+  --btn-outline-text:   #38bdf8;
+  --btn-outline-border: #0e689b;
+  --btn-secondary-bg:   #073B5C;
+  --btn-secondary-text: #f8fafc;
+  --btn-secondary-border: #0e689b;
+
+  /* Status Badges */
+  --badge-sedang-bg:   rgba(14, 165, 233, 0.20);
+  --badge-sedang-border: rgba(56, 189, 248, 0.50);
+  --badge-sedang-text: #38bdf8;
+
+  --badge-selesai-bg:  rgba(16, 185, 129, 0.20);
+  --badge-selesai-border: rgba(52, 211, 153, 0.50);
+  --badge-selesai-text: #34d399;
+
+  --badge-checkin-bg:  rgba(245, 158, 11, 0.20);
+  --badge-checkin-border: rgba(251, 191, 36, 0.50);
+  --badge-checkin-text: #fbbf24;
+
+  /* Brand / Accent */
+  --bms-navy:         #073B5C;
+  --bms-navy-light:   #0E689B;
+  --bms-navy-mid:     #094a73;
+
+  /* Borders */
+  --border-primary:   rgba(14, 104, 155, 0.40);
+  --border-subtle:    rgba(14, 104, 155, 0.25);
+  --border-card:      rgba(14, 104, 155, 0.40);
+
+  /* Input */
+  --input-bg:         #031522;
+  --input-border:     rgba(14, 104, 155, 0.40);
+  --input-text:       #f8fafc;
+  --input-placeholder: #94A3B8;
+  --input-focus-ring: rgba(7, 59, 92, 0.35);
+
+  /* Nav active */
+  --nav-active-bg:    linear-gradient(135deg, #073B5C 0%, #0E689B 100%);
+  --nav-inactive-text: rgba(186, 230, 253, 0.85);
+
+  /* Scrollbar */
+  --scrollbar-track:  #031522;
+  --scrollbar-thumb:  #073B5C;
+  --scrollbar-hover:  #0A527E;
+
+  /* Shadows */
+  --shadow-card:      0 20px 60px rgba(3, 21, 34, 0.6);
+  --shadow-navy:      0 0 30px rgba(7, 59, 92, 0.3);
+
+  /* Glass */
+  --glass-bg:         rgba(7, 59, 92, 0.35);
+  --glass-border:     rgba(14, 104, 155, 0.30);
+}
+
+/* ---------- LIGHT MODE ---------- */
+[data-theme="light"] {
+  /* Page backgrounds */
+  --bg-page:          #F0F6FC;
+  --bg-surface:       #FFFFFF;
+  --bg-card:          #FFFFFF;
+  --bg-card-deep:     #F8FAFC;
+  --bg-input:         #FFFFFF;
+  --bg-header:        #073B5C;   /* Header tetap BMS Navy di light mode */
+  --bg-sidebar:       #073B5C;
+  --bg-hover:         #0A527E;
+
+  /* Text */
+  --text-primary:     #0F2942;
+  --text-secondary:   #334155;
+  --text-muted:       #64748B;
+  --text-heading:     #073B5C;
+
+  /* Component Colors */
+  --id-kunjungan:     #073B5C;   /* Deep BMS Navy in Light Mode */
+  --emerald-durasi:   #047857;   /* Emerald 700 */
+
+  /* Button variables */
+  --btn-outline-text:   #073B5C;
+  --btn-outline-border: #073B5C;
+  --btn-secondary-bg:   #e2e8f0;
+  --btn-secondary-text: #0f2942;
+  --btn-secondary-border: #cbd5e1;
+
+  /* Status Badges */
+  --badge-sedang-bg:   #e0f2fe;
+  --badge-sedang-border: #7dd3fc;
+  --badge-sedang-text: #0369a1;
+
+  --badge-selesai-bg:  #d1fae5;
+  --badge-selesai-border: #6ee7b7;
+  --badge-selesai-text: #047857;
+
+  --badge-checkin-bg:  #fef3c7;
+  --badge-checkin-border: #fcd34d;
+  --badge-checkin-text: #b45309;
+
+  /* Brand / Accent */
+  --bms-navy:         #073B5C;
+  --bms-navy-light:   #0E689B;
+  --bms-navy-mid:     #094a73;
+
+  /* Borders */
+  --border-primary:   #CBD5E1;
+  --border-subtle:    #E2E8F0;
+  --border-card:      #CBD5E1;
+
+  /* Input */
+  --input-bg:         #FFFFFF;
+  --input-border:     #CBD5E1;
+  --input-text:       #0F2942;
+  --input-placeholder: #94A3B8;
+  --input-focus-ring: rgba(7, 59, 92, 0.20);
+
+  /* Nav active */
+  --nav-active-bg:    linear-gradient(135deg, #073B5C 0%, #0E689B 100%);
+  --nav-inactive-text: rgba(186, 230, 253, 0.85);
+
+  /* Scrollbar */
+  --scrollbar-track:  #E2E8F0;
+  --scrollbar-thumb:  #073B5C;
+  --scrollbar-hover:  #0A527E;
+
+  /* Shadows */
+  --shadow-card:      0 4px 24px rgba(7, 59, 92, 0.10);
+  --shadow-navy:      0 0 20px rgba(7, 59, 92, 0.15);
+
+  /* Glass */
+  --glass-bg:         rgba(255, 255, 255, 0.80);
+  --glass-border:     #CBD5E1;
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
+:root {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ============================================================
+   SEMANTIC UTILITY CLASSES (theme-aware)
+   ============================================================ */
+.bms-bg-page     { background-color: var(--bg-page) !important; }
+.bms-bg-surface  { background-color: var(--bg-surface) !important; }
+.bms-bg-card     { background-color: var(--bg-card) !important; }
+.bms-bg-header   { background-color: var(--bg-header) !important; }
+.bms-bg-input    { background-color: var(--input-bg) !important; }
+
+.bms-text        { color: var(--text-primary) !important; }
+.bms-text-muted  { color: var(--text-muted) !important; }
+.bms-text-heading { color: var(--text-heading) !important; }
+
+.bms-border      { border-color: var(--border-primary) !important; }
+.bms-border-subtle { border-color: var(--border-subtle) !important; }
+
+/* Card base — theme-aware */
+.theme-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-card);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Input base — theme-aware */
+.theme-input {
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+  color: var(--input-text);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.theme-input::placeholder {
+  color: var(--input-placeholder);
+}
+
+.theme-input:focus {
+  border-color: var(--bms-navy);
+  box-shadow: 0 0 0 3px var(--input-focus-ring);
+  outline: none;
+}
+
+/* ============================================================
+   LIGHT MODE — CARD & LAYOUT OVERRIDES
+   ============================================================ */
+[data-theme="light"] .welcome-hero-card {
+  background: linear-gradient(135deg, #073B5C 0%, #042338 60%, #031c30 100%);
+}
+
+[data-theme="light"] .checkin-card,
+[data-theme="light"] .checkout-card,
+[data-theme="light"] .login-card {
+  background: #FFFFFF;
+  border-color: #CBD5E1;
+  box-shadow: var(--shadow-card);
+}
+
+[data-theme="light"] .form-section {
+  background: #F8FAFC;
+  border-color: #E2E8F0;
+}
+
+[data-theme="light"] .action-card {
+  background: #FFFFFF;
+  border-color: #CBD5E1;
+}
+
+[data-theme="light"] .action-card:hover {
+  border-color: #073B5C;
+  box-shadow: 0 8px 30px rgba(7, 59, 92, 0.12);
+}
+
+[data-theme="light"] .stat-card {
+  background: #FFFFFF;
+  border-color: #CBD5E1;
+}
+
+[data-theme="light"] .qr-section-card {
+  background: #FFFFFF;
+  border-color: #CBD5E1;
+}
+
+[data-theme="light"] .breadcrumb-text {
+  color: #0F2942;
+}
+
+[data-theme="light"] .visit-summary-card {
+  background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+  border-color: #93C5FD;
+}
+
+[data-theme="light"] .visit-detail-row {
+  background: #F1F5F9;
+  border-color: #E2E8F0;
+}
+
+[data-theme="light"] .admin-nav-area {
+  background: rgba(3, 21, 34, 0.80);
+}
+
+[data-theme="light"] .search-box-area {
+  background: #F8FAFC;
+  border-color: #E2E8F0;
+}
+
+[data-theme="light"] .page-footer {
+  background: #073B5C;
+  border-top-color: rgba(14, 104, 155, 0.4);
+}
+
+[data-theme="light"] .page-footer span,
+[data-theme="light"] .page-footer p {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* Dark mode — footer stays same */
+[data-theme="dark"] .page-footer {
+  background: rgba(4, 35, 56, 0.90);
+  border-top-color: rgba(14, 104, 155, 0.30);
+}
+
+/* ============================================================
+   LIGHT MODE — INPUT OVERRIDES
+   ============================================================ */
+[data-theme="light"] input,
+[data-theme="light"] textarea,
+[data-theme="light"] select {
+  background-color: #FFFFFF !important;
+  color: #0F2942 !important;
+  border-color: #CBD5E1 !important;
+}
+
+select option {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] select option {
+  background-color: #042338 !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="light"] select option {
+  background-color: #FFFFFF !important;
+  color: #0F2942 !important;
+}
+
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: #94A3B8 !important;
+}
+
+[data-theme="light"] input:focus,
+[data-theme="light"] textarea:focus {
+  border-color: #073B5C !important;
+  box-shadow: 0 0 0 3px rgba(7, 59, 92, 0.15) !important;
+}
+
+[data-theme="light"] label {
+  color: #0F2942 !important;
+}
+
+[data-theme="light"] .helper-text {
+  color: #64748B !important;
+}
+
+/* ============================================================
+   TABLE ROW HOVER
+   ============================================================ */
+[data-theme="light"] .guest-table-row:hover {
+  background-color: #F1F5F9 !important;
+}
+
+[data-theme="dark"] .guest-table-row:hover {
+  background-color: rgba(14, 104, 155, 0.20) !important;
+}
+
+/* ============================================================
+   LIGHT MODE — SCROLL & MISC
+   ============================================================ */
+[data-theme="light"] .modal-bg {
+  background: #FFFFFF;
+  border-color: #CBD5E1;
+}
+
+[data-theme="light"] .admin-nav-inactive {
+  color: rgba(186, 230, 253, 0.80);
+}
+
+[data-theme="light"] .admin-nav-inactive:hover {
+  color: #FFFFFF;
+  background: rgba(7, 59, 92, 0.4);
+}
+
+/* ============================================================
+   CUSTOM SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track  { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb  { background: var(--scrollbar-thumb); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-hover); }
+
+/* ============================================================
+   GLASSMORPHISM
+   ============================================================ */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-card {
+  background: rgba(4, 35, 56, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(14, 104, 155, 0.25);
+}
+
+[data-theme="light"] .glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: #CBD5E1;
+}
+
+/* ============================================================
+   ANIMATION
+   ============================================================ */
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   PRINT STYLES
+   ============================================================ */
+@media print {
+  body * { visibility: hidden; }
+  .printable-badge, .printable-badge * { visibility: visible; }
+  .printable-badge {
+    position: absolute; left: 0; top: 0; width: 100%;
+    color: #000 !important; background: #fff !important;
+  }
+  .no-print { display: none !important; }
+}
+
+
+/* ============================================================
+   CUSTOM SCROLLBAR STYLES
+   ============================================================ */
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.5);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.8);
+}
+
+/* Firefox */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.5) transparent;
+}

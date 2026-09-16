@@ -1,0 +1,133 @@
+{
+  "name": "Buku Tamu Digital PT Besmindo - Webhook & Google Sheets Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tamu-checkin",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook Check-In",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract body from Webhook payload\nconst body = $input.item.json.body || $input.item.json;\n\n// Generate Visit ID: TAMU-YYYYMMDD-XXXX\nconst now = new Date();\nconst year = now.getFullYear();\nconst month = String(now.getMonth() + 1).padStart(2, '0');\nconst day = String(now.getDate()).padStart(2, '0');\nconst random4 = Math.floor(1000 + Math.random() * 9000);\nconst idKunjungan = body.idKunjungan || `TAMU-${year}${month}${day}-${random4}`;\n\nconst jamKunjungan = body.jamKunjungan || now.toISOString();\n\nconst processedData = {\n  idKunjungan,\n  nama: body.nama || '',\n  instansi: body.instansi || '',\n  telepon: body.telepon || '-',\n  jamKunjungan,\n  jamKeluar: '',\n  keterangan: body.keterangan || '',\n  tandaTangan: body.tandaTangan || '',\n  tandaTanganKeluar: '',\n  status: 'SEDANG BERKUNJUNG',\n  durasi: '-',\n  createdAt: now.toISOString(),\n  lastUpdated: now.toISOString()\n};\n\nreturn { json: processedData };"
+      },
+      "name": "Process Check-In Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Check-in tamu berhasil disimpan\",\n  \"data\": {\n    \"idKunjungan\": \"{{ $json.idKunjungan }}\",\n    \"nama\": \"{{ $json.nama }}\",\n    \"instansi\": \"{{ $json.instansi }}\",\n    \"jamKunjungan\": \"{{ $json.jamKunjungan }}\",\n    \"status\": \"{{ $json.status }}\",\n    \"keterangan\": \"{{ $json.keterangan }}\",\n    \"tandaTangan\": \"{{ $json.tandaTangan }}\"\n  }\n}",
+        "options": {}
+      },
+      "name": "Respond Check-In",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        650,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tamu-checkout",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook Check-Out",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.item.json.body || $input.item.json;\nconst jamKeluar = body.jamKeluar || new Date().toISOString();\nconst jamMasuk = body.jamKunjungan ? new Date(body.jamKunjungan) : new Date(Date.now() - 3600000);\n\nconst start = new Date(jamMasuk);\nconst end = new Date(jamKeluar);\nlet diffMs = end - start;\nif (diffMs < 0) diffMs = 0;\n\nconst totalMinutes = Math.floor(diffMs / (1000 * 60));\nconst hours = Math.floor(totalMinutes / 60);\nconst minutes = totalMinutes % 60;\nlet durasi = `${minutes} Menit`;\nif (hours > 0) {\n  durasi = `${hours} Jam ${minutes} Menit`;\n}\n\nreturn {\n  json: {\n    idKunjungan: body.idKunjungan,\n    jamKeluar,\n    tandaTanganKeluar: body.tandaTanganKeluar || '',\n    status: 'SELESAI',\n    durasi,\n    lastUpdated: new Date().toISOString()\n  }\n};"
+      },
+      "name": "Process Check-Out & Durasi",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        450,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Check-out tamu berhasil\",\n  \"data\": {\n    \"idKunjungan\": \"{{ $json.idKunjungan }}\",\n    \"jamKeluar\": \"{{ $json.jamKeluar }}\",\n    \"status\": \"{{ $json.status }}\",\n    \"durasi\": \"{{ $json.durasi }}\",\n    \"tandaTanganKeluar\": \"{{ $json.tandaTanganKeluar }}\"\n  }\n}",
+        "options": {}
+      },
+      "name": "Respond Check-Out",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        650,
+        500
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Check-In": {
+      "main": [
+        [
+          {
+            "node": "Process Check-In Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Check-In Data": {
+      "main": [
+        [
+          {
+            "node": "Respond Check-In",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Check-Out": {
+      "main": [
+        [
+          {
+            "node": "Process Check-Out & Durasi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Check-Out & Durasi": {
+      "main": [
+        [
+          {
+            "node": "Respond Check-Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
