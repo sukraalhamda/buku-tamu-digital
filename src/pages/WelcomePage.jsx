@@ -489,27 +489,6 @@ export default function WelcomePage({ onNavigate, showToast, refreshVisits }) {
           </div>
         )}
       </Modal>
-
-      {/* Floating Action Buttons (FAB) */}
-      <div className="fixed bottom-6 left-6 right-6 flex items-center justify-between gap-4 pointer-events-none z-40 md:hidden">
-        {/* Check-In FAB */}
-        <button
-          onClick={() => onNavigate('checkin')}
-          className="pointer-events-auto w-16 h-16 rounded-3xl bg-[#073B5C] border-2 border-[#0E689B] flex items-center justify-center text-sky-300 shadow-2xl transition-all duration-300 hover:scale-110 hover:shadow-sky-500/50 active:scale-95"
-          aria-label="Check-In"
-        >
-          <UserPlus className="w-7 h-7" />
-        </button>
-
-        {/* Check-Out FAB */}
-        <button
-          onClick={() => onNavigate('checkout')}
-          className="pointer-events-auto w-16 h-16 rounded-3xl bg-rose-500/90 border-2 border-rose-400 flex items-center justify-center text-white shadow-2xl transition-all duration-300 hover:scale-110 hover:shadow-rose-500/50 active:scale-95"
-          aria-label="Check-Out"
-        >
-          <LogOut className="w-7 h-7" />
-        </button>
-      </div>
     </div>
   );
 }
