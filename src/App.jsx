@@ -38,7 +38,7 @@ export default function App() {
       history.replaceState(null, '', window.location.pathname + window.location.search);
     } else if (window.location.hash === '#checkout') {
       setCurrentPage('checkout');
-      setPageParams({});
+      setPageParams({ isQrScan: true });
       history.replaceState(null, '', window.location.pathname + window.location.search);
     }
   }, []);
@@ -133,6 +133,7 @@ export default function App() {
           onNavigate={handleNavigate}
           showToast={showToast}
           refreshVisits={refreshVisits}
+          isQrScan={!!pageParams.isQrScan}
         />
       )}
 

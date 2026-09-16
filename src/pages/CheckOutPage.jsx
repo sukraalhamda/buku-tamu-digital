@@ -9,7 +9,7 @@ import useLiveClock from '../hooks/useLiveClock';
 import { formatDateTime } from '../utils/formatters';
 import { searchVisits, checkOutGuest } from '../services/apiService';
 
-export default function CheckOutPage({ initialId = '', onNavigate, showToast, refreshVisits }) {
+export default function CheckOutPage({ initialId = '', onNavigate, showToast, refreshVisits, isQrScan = false }) {
   const clock = useLiveClock();
   const [searchQuery, setSearchQuery] = useState(initialId);
   const [searchResults, setSearchResults] = useState([]);
@@ -66,13 +66,16 @@ export default function CheckOutPage({ initialId = '', onNavigate, showToast, re
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
-      {/* Back Navigation */}
-      <div className="flex items-center justify-between">
-        <button onClick={() => onNavigate('welcome')} className="inline-flex items-center gap-2 text-xs font-semibold cursor-pointer transition-colors" style={{ color: 'var(--text-secondary)' }}>
-          <ArrowLeft className="w-4 h-4" /><span>Kembali ke Beranda</span>
-        </button>
-        <div className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>Security Check-Out Desk</div>
-      </div>
+      {/* Back Navigation — hidden when from QR scan */}
+      {!isQrScan && (
+        <div className="flex items-center justify-between">
+          <button onClick={() => onNavigate('welcome')} className="inline-flex items-center gap-2 text-xs font-semibold cursor-pointer transition-colors" style={{ color: 'var(--text-secondary)' }}>
+            <ArrowLeft className="w-4 h-4" /><span>Kembali ke Beranda</span>
+          </button>
+          <div className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>Security Check-Out Desk</div>
+        </div>
+      )}
+      {isQrScan && <div className="text-xs font-mono text-center" style={{ color: 'var(--text-muted)' }}>Security Check-Out Desk — Scan QR</div>}
 
       {/* Main Card */}
       <div className="checkout-card rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-md space-y-6 transition-all duration-300" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-card)' }}>

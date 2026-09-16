@@ -68,20 +68,23 @@ export default function CheckInPage({ onNavigate, showToast, refreshVisits, isRe
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
-      {/* Back Navigation */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => onNavigate('welcome')}
-          className="inline-flex items-center gap-2 text-xs font-semibold transition-colors cursor-pointer breadcrumb-text"
-          style={{ color: 'var(--text-secondary)' }}
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Kembali ke Beranda</span>
-        </button>
-        <div className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
-          Form Check-In Tamu
+      {/* Back Navigation — hidden when from QR scan */}
+      {!isReadOnly && (
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => onNavigate('welcome')}
+            className="inline-flex items-center gap-2 text-xs font-semibold transition-colors cursor-pointer breadcrumb-text"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Kembali ke Beranda</span>
+          </button>
+          <div className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
+            Form Check-In Tamu
+          </div>
         </div>
-      </div>
+      )}
+      {isReadOnly && <div className="text-xs font-mono text-center" style={{ color: 'var(--text-muted)' }}>Form Check-In Tamu — Scan QR</div>}
 
       {/* Main Card */}
       <div
