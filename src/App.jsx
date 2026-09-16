@@ -30,12 +30,15 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState('welcome');
   const [pageParams, setPageParams] = useState({});
 
-  // Detect QR scan via URL hash #checkin → navigate to checkin as read-only
+  // Detect QR scan via URL hash #checkin / #checkout → navigate accordingly
   useEffect(() => {
     if (window.location.hash === '#checkin') {
       setCurrentPage('checkin');
       setPageParams({ isQrScan: true });
-      // Clean up the hash without reload
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    } else if (window.location.hash === '#checkout') {
+      setCurrentPage('checkout');
+      setPageParams({});
       history.replaceState(null, '', window.location.pathname + window.location.search);
     }
   }, []);

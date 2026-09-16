@@ -24,6 +24,8 @@ export default function WelcomePage({ onNavigate, showToast, refreshVisits }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const currentAppUrl = window.location.href;
   const checkInDirectUrl = `${window.location.origin}${window.location.pathname}#checkin`;
+  const checkOutDirectUrl = `${window.location.origin}${window.location.pathname}#checkout`;
+  const [qrType, setQrType] = useState('checkin'); // checkin | checkout
   const n8nBaseUrl = import.meta.env.VITE_N8N_BASE_URL;
 
   // Debounced search for active visitors
@@ -263,32 +265,41 @@ export default function WelcomePage({ onNavigate, showToast, refreshVisits }) {
           <div>
             <h4 className="text-base font-bold" style={{ color: 'var(--text-heading)' }}>QR Code Pos Security Desk</h4>
             <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-              Tampilkan atau cetak QR Code ini di meja pos keamanan agar pengunjung dapat memindai langsung dari smartphone.
+              Cetak 2 QR: Check-In untuk tamu masuk, Check-Out untuk tamu keluar. Scan langsung buka form.
             </p>
           </div>
         </div>
-        <Button variant="outline" size="md" icon={QrCode} onClick={() => setShowQrModal(true)} className="shrink-0">
-          Tampilkan QR Code Pos
-        </Button>
+        <div className="flex gap-3 shrink-0 flex-wrap">
+          <Button variant="primary" size="md" icon={QrCode} onClick={() => { setQrType('checkin'); setShowQrModal(true); }}>
+            QR Check-In
+          </Button>
+          <Button variant="danger" size="md" icon={LogOut} onClick={() => { setQrType('checkout'); setShowQrModal(true); }}>
+            QR Check-Out
+          </Button>
+        </div>
       </div>
 
       {/* QR Modal */}
-      <Modal isOpen={showQrModal} onClose={() => setShowQrModal(false)} title="QR Code Pos Keamanan Security" maxWidth="max-w-md">
+      <Modal isOpen={showQrModal} onClose={() => setShowQrModal(false)} title={qrType === 'checkin' ? 'QR Code Check-In (Masuk)' : 'QR Code Check-Out (Keluar)'} maxWidth="max-w-md">
         <div className="flex flex-col items-center text-center space-y-6 py-2">
-          <div className="p-4 bg-white rounded-2xl shadow-xl border-4 border-[#073B5C]">
-            <QRCodeSVG value={checkInDirectUrl} size={220} level="H" includeMargin />
+          <div className="flex gap-2 p-1 rounded-full" style={{ backgroundColor: 'var(--bg-card-deep)', border: '1px solid var(--border-subtle)' }}>
+            <button onClick={() => setQrType('checkin')} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer ${qrType === 'checkin' ? 'bg-[#073B5C] text-white' : ''}`} style={qrType !== 'checkin' ? { color: 'var(--text-muted)' } : {}}>Check-In</button>
+            <button onClick={() => setQrType('checkout')} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer ${qrType === 'checkout' ? 'bg-rose-600 text-white' : ''}`} style={qrType !== 'checkout' ? { color: 'var(--text-muted)' } : {}}>Check-Out</button>
+          </div>
+          <div className="p-4 bg-white rounded-2xl shadow-xl border-4" style={{ borderColor: qrType === 'checkin' ? '#073B5C' : '#e11d48' }}>
+            <QRCodeSVG value={qrType === 'checkin' ? checkInDirectUrl : checkOutDirectUrl} size={220} level="H" includeMargin />
           </div>
           <div>
-            <h4 className="font-bold text-lg" style={{ color: 'var(--text-heading)' }}>SCAN UNTUK CHECK-IN LANGSUNG</h4>
+            <h4 className="font-bold text-lg" style={{ color: 'var(--text-heading)' }}>{qrType === 'checkin' ? 'SCAN UNTUK CHECK-IN' : 'SCAN UNTUK CHECK-OUT'}</h4>
             <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
-              Scan QR ini untuk langsung ke form check-in tamu
+              {qrType === 'checkin' ? 'Scan QR ini untuk langsung ke form check-in' : 'Scan QR ini untuk langsung ke form check-out'}
             </p>
           </div>
           <div className="w-full p-3 rounded-xl border text-xs font-mono flex items-center justify-between gap-2" style={{ backgroundColor: 'var(--bg-card-deep)', borderColor: 'var(--border-primary)', color: 'var(--text-secondary)' }}>
-            <span className="truncate">{checkInDirectUrl}</span>
+            <span className="truncate">{qrType === 'checkin' ? checkInDirectUrl : checkOutDirectUrl}</span>
             <button onClick={() => {
-              navigator.clipboard.writeText(checkInDirectUrl);
-              showToast('Link check-in berhasil disalin!', 'success');
+              navigator.clipboard.writeText(qrType === 'checkin' ? checkInDirectUrl : checkOutDirectUrl);
+              showToast(qrType === 'checkin' ? 'Link check-in berhasil disalin!' : 'Link check-out berhasil disalin!', 'success');
             }} className="p-1.5 rounded-lg text-sky-400 transition-colors shrink-0 hover:bg-[#073B5C]/20 cursor-pointer">
               <Copy className="w-4 h-4" />
             </button>
