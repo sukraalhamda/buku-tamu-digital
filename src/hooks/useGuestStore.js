@@ -1,17 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchGuestVisits } from '../services/apiService';
+import { supabase } from '../lib/supabase';
 
 export function useGuestStore() {
   const [visits, setVisits] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [adminUser, setAdminUser] = useState(() => {
-    return localStorage.getItem('besmindo_admin_logged') === 'true';
-  });
+  const [adminUser, setAdminUser] = useState(null);
 
   const [toast, setToast] = useState({
     show: false,
     message: '',
-    type: 'info' // 'success' | 'error' | 'info' | 'warning'
+    type: 'info'
   });
 
   const showToast = useCallback((message, type = 'info') => {
@@ -32,32 +31,44 @@ export function useGuestStore() {
       setVisits(data || []);
     } catch (err) {
       console.error('Error loading visits:', err);
-      showToast('Gagal memuat data kunjungan', 'error');
+      showToast('Gagal memuat data kunjungan: ' + err.message, 'error');
     } finally {
       setLoading(false);
     }
   }, [showToast]);
 
   useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setAdminUser(session?.user ?? null);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAdminUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
     loadVisits();
   }, [loadVisits]);
 
-  const loginAdmin = (username, password) => {
-    // Simple authentication logic for admin demo
-    if (username === 'admin' && (password === 'admin123' || password === 'besmindo123')) {
-      localStorage.setItem('besmindo_admin_logged', 'true');
-      setAdminUser(true);
-      showToast('Login berhasil! Selamat datang Admin PT Besmindo.', 'success');
-      return true;
-    } else {
-      showToast('Username atau Password salah! (Default: admin / besmindo123)', 'error');
+  // Hanya Supabase Auth — tidak ada kredensial hardcoded
+  const loginAdmin = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    if (error) {
+      showToast(error.message === 'Invalid login credentials' ? 'Email atau password salah.' : error.message, 'error');
       return false;
     }
+    if (data.user) {
+      setAdminUser(data.user);
+      showToast('Login berhasil! Selamat datang Admin.', 'success');
+      return true;
+    }
+    return false;
   };
 
-  const logoutAdmin = () => {
-    localStorage.removeItem('besmindo_admin_logged');
-    setAdminUser(false);
+  const logoutAdmin = async () => {
+    await supabase.auth.signOut();
+    setAdminUser(null);
     showToast('Anda telah keluar dari akun Admin.', 'info');
   };
 

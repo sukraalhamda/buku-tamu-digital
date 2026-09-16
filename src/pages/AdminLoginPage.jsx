@@ -1,25 +1,26 @@
 import React, { useState } from 'react';
-import { Lock, User, KeyRound, Shield, ArrowLeft } from 'lucide-react';
+import { Lock, User, KeyRound, ArrowLeft } from 'lucide-react';
 import Input from '../components/Input';
 import Button from '../components/Button';
 
 export default function AdminLoginPage({ onLogin, onNavigate, showToast }) {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!username || !password) {
-      showToast('Masukkan Username dan Password Admin', 'warning');
+    if (!email || !password) {
+      showToast('Masukkan Email dan Password Admin', 'warning');
       return;
     }
     setIsLoading(true);
-    setTimeout(() => {
-      const success = onLogin(username, password);
-      setIsLoading(false);
+    try {
+      const success = await onLogin(email, password);
       if (success) onNavigate('admin-dashboard');
-    }, 400);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -51,19 +52,9 @@ export default function AdminLoginPage({ onLogin, onNavigate, showToast }) {
           </p>
         </div>
 
-        {/* Credential Info */}
-        <div className="p-3.5 rounded-xl border text-xs space-y-1" style={{ backgroundColor: 'var(--bg-card-deep)', borderColor: 'var(--border-primary)' }}>
-          <p className="font-semibold flex items-center gap-1 text-sky-400">
-            <Shield className="w-3.5 h-3.5" /> Kredensial Demo Security:
-          </p>
-          <div className="font-mono text-[11px]" style={{ color: 'var(--text-secondary)' }}>
-            Username: <span className="font-bold" style={{ color: 'var(--text-primary)' }}>admin</span> | Password: <span className="font-bold" style={{ color: 'var(--text-primary)' }}>besmindo123</span>
-          </div>
-        </div>
-
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Input label="Username Admin" name="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Masukkan username" icon={User} required />
+          <Input label="Email Admin" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@bms.co.id" icon={User} required />
           <Input label="Password Admin" name="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" icon={KeyRound} required />
           <Button type="submit" variant="primary" size="lg" className="w-full font-bold shadow-lg shadow-[#073B5C]/40 mt-2" isLoading={isLoading} icon={Lock}>
             Masuk ke Dashboard Admin

@@ -1,175 +1,124 @@
 /**
- * API Service for Buku Tamu Digital
- * Handles communication with n8n Webhooks & Google Sheets automation middleware.
- * If VITE_N8N_BASE_URL environment variable is not defined or request fails, 
- * it automatically falls back to local storage mock mode.
+ * Supabase-backed API Service
+ * Replaces mockStorage + n8n fallback with real Supabase DB
  */
+import { supabase } from '../lib/supabase'
+import { generateVisitId, calculateDuration } from '../utils/formatters'
 
-import { addVisitMock, checkoutVisitMock, getStoredVisits, getVisitByIdMock, searchVisitsMock } from './mockStorage';
-import { generateVisitId } from '../utils/formatters';
+// map DB snake_case -> app camelCase
+function mapFromDb(row) {
+  if (!row) return null
+  return {
+    id: row.id,
+    idKunjungan: row.id_kunjungan,
+    nama: row.nama,
+    instansi: row.instansi,
+    jamKunjungan: row.jam_kunjungan,
+    jamKeluar: row.jam_keluar,
+    keterangan: row.keterangan,
+    tandaTangan: row.tanda_tangan,
+    tandaTanganKeluar: row.tanda_tangan_keluar,
+    status: row.status,
+    durasi: row.durasi,
+    createdAt: row.created_at,
+  }
+}
 
-const N8N_BASE_URL = import.meta.env.VITE_N8N_BASE_URL?.trim();
+function mapToDb(payload) {
+  const db = {}
+  if (payload.idKunjungan !== undefined) db.id_kunjungan = payload.idKunjungan
+  if (payload.nama !== undefined) db.nama = payload.nama
+  if (payload.instansi !== undefined) db.instansi = payload.instansi
+  if (payload.jamKunjungan !== undefined) db.jam_kunjungan = payload.jamKunjungan
+  if (payload.jamKeluar !== undefined) db.jam_keluar = payload.jamKeluar
+  if (payload.keterangan !== undefined) db.keterangan = payload.keterangan
+  if (payload.tandaTangan !== undefined) db.tanda_tangan = payload.tandaTangan
+  if (payload.tandaTanganKeluar !== undefined) db.tanda_tangan_keluar = payload.tandaTanganKeluar
+  if (payload.status !== undefined) db.status = payload.status
+  if (payload.durasi !== undefined) db.durasi = payload.durasi
+  return db
+}
 
-/**
- * Check-In Guest Service
- * Sends POST request to n8n Webhook /webhook/tamu-checkin
- */
 export const checkInGuest = async (formData) => {
-  const generatedId = generateVisitId();
-  const payload = {
-    idKunjungan: generatedId,
+  const idKunjungan = generateVisitId()
+  const jamKunjungan = formData.jamKunjungan || new Date().toISOString()
+  const row = {
+    id_kunjungan: idKunjungan,
     nama: formData.nama,
     instansi: formData.instansi,
-    jamKunjungan: formData.jamKunjungan || new Date().toISOString(),
-    tandaTangan: formData.tandaTangan,
-    keterangan: formData.keterangan
-  };
-
-  // If n8n Webhook Base URL is configured, try sending to n8n first
-  if (N8N_BASE_URL) {
-    try {
-      const response = await fetch(`${N8N_BASE_URL}/webhook/tamu-checkin`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP Error from n8n: ${response.status} ${response.statusText}`);
-      }
-
-      const resData = await response.json();
-      
-      // Save locally as well for immediate UI sync
-      const savedData = addVisitMock(resData?.data || payload);
-      return {
-        success: true,
-        data: savedData,
-        viaN8n: true,
-        message: 'Check-In berhasil tercatat via n8n & Google Sheets!'
-      };
-    } catch (err) {
-      console.warn('n8n Webhook connection error, falling back to local mode:', err.message);
-      // Fall back to local mock storage
-      const savedData = addVisitMock(payload);
-      return {
-        success: true,
-        data: savedData,
-        viaN8n: false,
-        message: 'Check-In berhasil tercatat (Mode Offline/Local Backup)'
-      };
-    }
+    jam_kunjungan: jamKunjungan,
+    keterangan: formData.keterangan,
+    tanda_tangan: formData.tandaTangan || null,
+    status: 'SEDANG BERKUNJUNG',
+    durasi: '-',
   }
+  const { data, error } = await supabase.from('visits').insert(row).select().single()
+  if (error) throw new Error(error.message)
+  return { success: true, data: mapFromDb(data), viaSupabase: true, message: 'Check-In berhasil tercatat di Supabase!' }
+}
 
-  // Pure Mock local mode
-  const savedData = addVisitMock(payload);
-  return {
-    success: true,
-    data: savedData,
-    viaN8n: false,
-    message: 'Check-In berhasil tercatat secara lokal.'
-  };
-};
-
-/**
- * Check-Out Guest Service
- * Sends POST request to n8n Webhook /webhook/tamu-checkout
- */
 export const checkOutGuest = async (checkoutData) => {
-  const payload = {
-    idKunjungan: checkoutData.idKunjungan,
-    jamKeluar: checkoutData.jamKeluar || new Date().toISOString(),
-    tandaTanganKeluar: checkoutData.tandaTanganKeluar
-  };
+  const idKunjungan = checkoutData.idKunjungan?.trim()
+  if (!idKunjungan) throw new Error('ID Kunjungan wajib diisi')
+  // fetch existing to calc duration
+  const { data: existing, error: fetchErr } = await supabase
+    .from('visits')
+    .select('*')
+    .eq('id_kunjungan', idKunjungan)
+    .single()
+  if (fetchErr || !existing) throw new Error(`Data kunjungan dengan ID "${idKunjungan}" tidak ditemukan.`)
+  if (existing.status === 'SELESAI') throw new Error(`Tamu dengan ID "${idKunjungan}" sudah check-out.`)
 
-  if (N8N_BASE_URL) {
-    try {
-      const response = await fetch(`${N8N_BASE_URL}/webhook/tamu-checkout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+  const jamKeluar = checkoutData.jamKeluar || new Date().toISOString()
+  const durasi = calculateDuration(existing.jam_kunjungan, jamKeluar)
 
-      if (!response.ok) {
-        throw new Error(`HTTP Error from n8n: ${response.status} ${response.statusText}`);
-      }
+  const { data, error } = await supabase
+    .from('visits')
+    .update({
+      jam_keluar: jamKeluar,
+      tanda_tangan_keluar: checkoutData.tandaTanganKeluar || null,
+      status: 'SELESAI',
+      durasi,
+    })
+    .eq('id_kunjungan', idKunjungan)
+    .select()
+    .single()
+  if (error) throw new Error(error.message)
+  return { success: true, data: mapFromDb(data), viaSupabase: true, message: 'Check-Out berhasil!' }
+}
 
-      const resData = await response.json();
-      const updatedData = checkoutVisitMock(resData?.data || payload);
-      return {
-        success: true,
-        data: updatedData,
-        viaN8n: true,
-        message: 'Check-Out berhasil diproses via n8n!'
-      };
-    } catch (err) {
-      console.warn('n8n Webhook checkout error, falling back to local mode:', err.message);
-      const updatedData = checkoutVisitMock(payload);
-      return {
-        success: true,
-        data: updatedData,
-        viaN8n: false,
-        message: 'Check-Out berhasil diproses (Mode Offline/Local Backup)'
-      };
-    }
-  }
-
-  // Pure Mock local mode
-  const updatedData = checkoutVisitMock(payload);
-  return {
-    success: true,
-    data: updatedData,
-    viaN8n: false,
-    message: 'Check-Out berhasil diproses.'
-  };
-};
-
-/**
- * Fetch List of All Guest Visits
- */
 export const fetchGuestVisits = async () => {
-  if (N8N_BASE_URL) {
-    try {
-      const response = await fetch(`${N8N_BASE_URL}/webhook/tamu-list`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (response.ok) {
-        const resData = await response.json();
-        if (Array.isArray(resData)) return resData;
-        if (resData.data && Array.isArray(resData.data)) return resData.data;
-      }
-    } catch (err) {
-      console.warn('Could not fetch from n8n webhook list, returning local stored visits:', err.message);
-    }
-  }
-  return getStoredVisits();
-};
+  const { data, error } = await supabase
+    .from('visits')
+    .select('*')
+    .order('jam_kunjungan', { ascending: false })
+  if (error) throw new Error(error.message)
+  return (data || []).map(mapFromDb)
+}
 
-/**
- * Get Visit Detail by ID Kunjungan
- */
 export const fetchVisitById = async (idKunjungan) => {
-  return getVisitByIdMock(idKunjungan);
-};
+  if (!idKunjungan) return null
+  const { data } = await supabase.from('visits').select('*').eq('id_kunjungan', idKunjungan.trim()).single()
+  return mapFromDb(data)
+}
 
-/**
- * Search Visits by Name, Instansi, or ID
- */
 export const searchVisits = async (query) => {
-  return searchVisitsMock(query);
-};
+  if (!query?.trim()) return []
+  const q = `%${query.trim()}%`
+  const { data } = await supabase
+    .from('visits')
+    .select('*')
+    .or(`nama.ilike.${q},instansi.ilike.${q},id_kunjungan.ilike.${q}`)
+    .order('jam_kunjungan', { ascending: false })
+  return (data || []).map(mapFromDb)
+}
 
-/**
- * Search Active Visits (guests currently visiting - not checked out)
- */
 export const searchActiveVisits = async (query) => {
-  // Import the new function
-  const { searchActiveVisitsMock } = await import('./mockStorage');
-  return searchActiveVisitsMock(query);
-};
-
+  let builder = supabase.from('visits').select('*').eq('status', 'SEDANG BERKUNJUNG').order('jam_kunjungan', { ascending: false })
+  if (query?.trim()) {
+    const q = `%${query.trim()}%`
+    builder = builder.or(`nama.ilike.${q},instansi.ilike.${q}`)
+  }
+  const { data } = await builder
+  return (data || []).map(mapFromDb)
+}
