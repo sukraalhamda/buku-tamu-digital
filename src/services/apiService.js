@@ -1,9 +1,33 @@
 /**
  * Supabase-backed API Service
- * Replaces mockStorage + n8n fallback with real Supabase DB
+ * TTD disimpan di Supabase Storage (folder signatures/masuk & signatures/keluar)
+ * DB hanya simpan public URL, bukan base64 full
  */
 import { supabase } from '../lib/supabase'
 import { generateVisitId, calculateDuration } from '../utils/formatters'
+
+const BUCKET = 'signatures'
+
+function dataUrlToBlob(dataUrl) {
+  const [meta, b64] = dataUrl.split(',')
+  const mime = meta.match(/:(.*?);/)?.[1] || 'image/png'
+  const bin = atob(b64)
+  const arr = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i)
+  return new Blob([arr], { type: mime })
+}
+
+async function uploadSignature(dataUrl, path) {
+  if (!dataUrl || !dataUrl.startsWith('data:')) return dataUrl // already URL or empty
+  const blob = dataUrlToBlob(dataUrl)
+  const { error } = await supabase.storage.from(BUCKET).upload(path, blob, {
+    contentType: 'image/png',
+    upsert: true,
+  })
+  if (error) throw new Error('Upload tanda tangan gagal: ' + error.message)
+  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path)
+  return data.publicUrl
+}
 
 // map DB snake_case -> app camelCase
 function mapFromDb(row) {
@@ -42,19 +66,24 @@ function mapToDb(payload) {
 export const checkInGuest = async (formData) => {
   const idKunjungan = generateVisitId()
   const jamKunjungan = formData.jamKunjungan || new Date().toISOString()
+  // upload TTD masuk ke Storage dulu
+  let ttdUrl = null
+  if (formData.tandaTangan) {
+    ttdUrl = await uploadSignature(formData.tandaTangan, `masuk/${idKunjungan}.png`)
+  }
   const row = {
     id_kunjungan: idKunjungan,
     nama: formData.nama,
     instansi: formData.instansi,
     jam_kunjungan: jamKunjungan,
     keterangan: formData.keterangan,
-    tanda_tangan: formData.tandaTangan || null,
+    tanda_tangan: ttdUrl,
     status: 'SEDANG BERKUNJUNG',
     durasi: '-',
   }
   const { data, error } = await supabase.from('visits').insert(row).select().single()
   if (error) throw new Error(error.message)
-  return { success: true, data: mapFromDb(data), viaSupabase: true, message: 'Check-In berhasil tercatat di Supabase!' }
+  return { success: true, data: mapFromDb(data), viaSupabase: true, message: 'Check-In berhasil tercatat!' }
 }
 
 export const checkOutGuest = async (checkoutData) => {
@@ -63,7 +92,6 @@ export const checkOutGuest = async (checkoutData) => {
   if (!checkoutData.tandaTanganKeluar || !checkoutData.tandaTanganKeluar.trim()) {
     throw new Error('Tanda tangan saat keluar wajib diisi.')
   }
-  // fetch existing to calc duration
   const { data: existing, error: fetchErr } = await supabase
     .from('visits')
     .select('*')
@@ -74,12 +102,14 @@ export const checkOutGuest = async (checkoutData) => {
 
   const jamKeluar = checkoutData.jamKeluar || new Date().toISOString()
   const durasi = calculateDuration(existing.jam_kunjungan, jamKeluar)
+  // upload TTD keluar ke Storage
+  const ttdKeluarUrl = await uploadSignature(checkoutData.tandaTanganKeluar, `keluar/${idKunjungan}.png`)
 
   const { data, error } = await supabase
     .from('visits')
     .update({
       jam_keluar: jamKeluar,
-      tanda_tangan_keluar: checkoutData.tandaTanganKeluar || null,
+      tanda_tangan_keluar: ttdKeluarUrl,
       status: 'SELESAI',
       durasi,
     })
