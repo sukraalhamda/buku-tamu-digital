@@ -60,12 +60,11 @@ export default function HistoryPage({
       return;
     }
 
-    const headers = ['ID Kunjungan', 'Nama Tamu', 'Instansi/Perusahaan', 'Telepon', 'Jam Kunjungan', 'Jam Keluar', 'Durasi', 'Status', 'Keterangan'];
+    const headers = ['ID Kunjungan', 'Nama Tamu', 'Instansi/Perusahaan', 'Jam Kunjungan', 'Jam Keluar', 'Durasi', 'Status', 'Keterangan'];
     const data = monthData.map(v => [
       v.idKunjungan || '',
       v.nama || '',
       v.instansi || '',
-      v.telepon || '',
       v.jamKunjungan ? new Date(v.jamKunjungan).toLocaleString('id-ID') : '',
       v.jamKeluar ? new Date(v.jamKeluar).toLocaleString('id-ID') : '-',
       v.durasi || '-',
@@ -86,7 +85,7 @@ export default function HistoryPage({
 
     const ws = XLSX.utils.aoa_to_sheet([headers, ...data, ...summaryRows]);
     ws['!cols'] = [
-      { wch: 16 }, { wch: 22 }, { wch: 24 }, { wch: 16 },
+      { wch: 16 }, { wch: 22 }, { wch: 24 },
       { wch: 20 }, { wch: 20 }, { wch: 14 }, { wch: 18 }, { wch: 30 },
     ];
     // Header style
