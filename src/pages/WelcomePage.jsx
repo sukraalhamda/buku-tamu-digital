@@ -97,13 +97,17 @@ export default function WelcomePage({ onNavigate, showToast, refreshVisits }) {
       showToast('Kunjungan ini sudah SELESAI.', 'warning');
       return;
     }
+    if (!tandaTanganKeluar || !tandaTanganKeluar.trim()) {
+      showToast('Tanda tangan saat keluar wajib diisi.', 'error');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
       const result = await checkOutGuest({
         idKunjungan: selectedVisit.idKunjungan,
         jamKeluar: clock.isoValue,
-        tandaTanganKeluar: tandaTanganKeluar || selectedVisit.tandaTangan || ''
+        tandaTanganKeluar: tandaTanganKeluar
       });
 
       if (result.success) {
@@ -450,10 +454,10 @@ export default function WelcomePage({ onNavigate, showToast, refreshVisits }) {
               />
               
               <SignaturePad 
-                label="Tanda Tangan Saat Keluar (Opsional)" 
+                label="Tanda Tangan Saat Keluar" 
                 value={tandaTanganKeluar} 
                 onChange={(val) => setTandaTanganKeluar(val)} 
-                required={false} 
+                required={true} 
               />
             </div>
 

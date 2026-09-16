@@ -60,6 +60,9 @@ export const checkInGuest = async (formData) => {
 export const checkOutGuest = async (checkoutData) => {
   const idKunjungan = checkoutData.idKunjungan?.trim()
   if (!idKunjungan) throw new Error('ID Kunjungan wajib diisi')
+  if (!checkoutData.tandaTanganKeluar || !checkoutData.tandaTanganKeluar.trim()) {
+    throw new Error('Tanda tangan saat keluar wajib diisi.')
+  }
   // fetch existing to calc duration
   const { data: existing, error: fetchErr } = await supabase
     .from('visits')

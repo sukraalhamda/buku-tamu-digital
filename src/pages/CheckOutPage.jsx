@@ -45,7 +45,12 @@ export default function CheckOutPage({ initialId = '', onNavigate, showToast, re
     if (e) e.preventDefault();
     if (!selectedVisit) { showToast('Pilih data pengunjung terlebih dahulu', 'warning'); return; }
     if (selectedVisit.status === 'SELESAI') { showToast('Kunjungan ini sudah SELESAI.', 'warning'); return; }
-    const finalSignature = tandaTanganKeluar || selectedVisit.tandaTangan || '';
+    if (!tandaTanganKeluar || !tandaTanganKeluar.trim()) {
+      setErrorSig('Tanda tangan saat keluar wajib digoreskan.');
+      showToast('Tanda tangan saat keluar wajib diisi.', 'error');
+      return;
+    }
+    const finalSignature = tandaTanganKeluar;
     setIsSubmitting(true);
     try {
       // Use live clock ISO value at the moment submit is pressed
@@ -165,7 +170,7 @@ export default function CheckOutPage({ initialId = '', onNavigate, showToast, re
                   isoValue={clock.isoValue}
                   helperText="Waktu keluar dicatat otomatis oleh sistem — tidak dapat diubah."
                 />
-                <SignaturePad label="Tanda Tangan Saat Keluar (Opsional)" value={tandaTanganKeluar} onChange={(val) => { setTandaTanganKeluar(val); setErrorSig(null); }} required={false} error={errorSig} />
+                <SignaturePad label="Tanda Tangan Saat Keluar" value={tandaTanganKeluar} onChange={(val) => { setTandaTanganKeluar(val); setErrorSig(null); }} required={true} error={errorSig} />
                 <Button type="submit" variant="danger" size="lg" className="w-full text-lg font-black tracking-wide shadow-2xl shadow-rose-500/30" isLoading={isSubmitting} icon={LogOut}>
                   CHECK-OUT
                 </Button>
