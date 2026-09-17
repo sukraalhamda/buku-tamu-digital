@@ -37,9 +37,10 @@ export default function MainLayout({ children, toast, onCloseToast, onNavigateAd
 
           {/* Right Actions */}
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="hidden md:flex items-center gap-2 text-xs text-sky-100 bg-[#042338]/90 px-3.5 py-1.5 rounded-full border border-[#0E689B]/40 shadow-inner">
+            {/* Portal Security Badge - Visible on all screens */}
+            <div className="flex items-center gap-2 text-xs text-sky-100 bg-[#042338]/90 px-3 py-1.5 rounded-full border border-[#0E689B]/40 shadow-inner">
               <Shield className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Portal Security Post 1</span>
+              <span className="font-semibold">Portal Security</span>
             </div>
 
             {/* Dark / Light Toggle */}
